@@ -11,29 +11,10 @@ static void Main(string[] args)
     var tree = new BTree(level);
     var value = 2137;
 
-    //tree.Insert(1);
-    //tree.Insert(2);
-    //tree.Insert(value);
-    //tree.Insert(3);
-    //tree.Insert(4);
-    //tree.Insert(5);
     for(int i =1; i<20; i++)
     {
         tree.Insert(i);
     }
-    /*
-    Console.WriteLine($"Search 5");
-    tree.Search(5);
-    Console.WriteLine($"End 5");
-
-    Console.WriteLine($"Search 1");
-    tree.Search(1);
-    Console.WriteLine($"End 1");
-
-    Console.WriteLine($"Search 3");
-    tree.Search(3);
-    Console.WriteLine($"End 3");
-    */
 
     /*
     Console.WriteLine($"Checking if value: {value} exists");
