@@ -1,5 +1,8 @@
 ﻿
 
+using System.Xml.Linq;
+using System.Xml.Serialization;
+
 static void Main(string[] args)
 {
     string IsExisting(bool value) => value ? "exists" : "don't exist";
@@ -8,12 +11,31 @@ static void Main(string[] args)
     var tree = new BTree(level);
     var value = 2137;
 
-    Console.WriteLine("Inserting Values");
-    tree.Insert(1);
-    tree.Insert(2);
-    tree.Insert(value);
-    tree.Insert(4);
+    //tree.Insert(1);
+    //tree.Insert(2);
+    //tree.Insert(value);
+    //tree.Insert(3);
+    //tree.Insert(4);
+    //tree.Insert(5);
+    for(int i =1; i<20; i++)
+    {
+        tree.Insert(i);
+    }
+    /*
+    Console.WriteLine($"Search 5");
+    tree.Search(5);
+    Console.WriteLine($"End 5");
 
+    Console.WriteLine($"Search 1");
+    tree.Search(1);
+    Console.WriteLine($"End 1");
+
+    Console.WriteLine($"Search 3");
+    tree.Search(3);
+    Console.WriteLine($"End 3");
+    */
+
+    /*
     Console.WriteLine($"Checking if value: {value} exists");
     var exists = tree.Search(value);
     Console.WriteLine($"Value {IsExisting(exists)}");
@@ -24,6 +46,8 @@ static void Main(string[] args)
     Console.WriteLine($"Checking if value: {value} exists");
     exists = tree.Search(value);
     Console.WriteLine($"Value {IsExisting(exists)}");
+    */
+    tree.PrintTree();
 }
 Main(args);
 public static class Executor
@@ -63,15 +87,153 @@ public class BTreeNode
         IsLeaf = true;
     }
 }
+
+public class BTreeNodeWithPosition
+{
+    public int positionX { get; set; }
+    public int positionY { get; set; }
+    public List<int> nodeValues  {get;set;}
+}
+
+
 public class BTree
 {
     private BTreeNode root; // korzeń drzewa
     private int t; // stopień drzewa
+    private int currentColumn = 0;
+    private int maxRow = 0;
 
     public BTree(int t)
     {
         this.t = t;
         root = null;
+    }
+    public void ListNodes(BTreeNode node,
+                          int row,
+                          List<BTreeNodeWithPosition> nodesWithPosition)
+    {
+        if (node == null)
+            return;
+
+
+        var values = new List<int>();
+
+        for (int i = 0; i < node.KeyCount; i++)
+        {
+            Console.Write($"{node.Keys[i]} [C:{currentColumn}][R:{row}]\n");
+            values.Add(node.Keys[i]);       
+        }
+
+        nodesWithPosition.Add(new BTreeNodeWithPosition
+        {
+            positionX = currentColumn,
+            positionY = row,
+            nodeValues = values
+        });
+        row++;
+        if (maxRow < row)
+            maxRow = row;
+
+        if (!node.IsLeaf)
+        {
+            for (int i = 0; i <= node.KeyCount; i++)
+            {            
+                ListNodes(node.Children[i], row, nodesWithPosition);
+            }
+        }
+        currentColumn++;
+        
+    }
+    public void PrintTree()
+    {
+        var row = 0;
+        var nodesWithPositions = new List<BTreeNodeWithPosition>();
+
+        ListNodes(root, row, nodesWithPositions);
+        NodesToMatrix(nodesWithPositions);
+        //PrintNodes(nodesWithPositions);
+    }
+
+    private void NodesToMatrix(List<BTreeNodeWithPosition> nodesWithPositions)
+    {
+        string[,] matrix = new string[currentColumn, maxRow];
+
+        foreach(var node in nodesWithPositions)
+        {
+            var value = "";
+            foreach (var number in node.nodeValues)
+                value += $"{number} ";
+
+            matrix[node.positionX, node.positionY] = value;
+        }
+
+        // some kreski
+
+
+        for (int i = 0; i < matrix.GetLength(0); i++)
+        {
+            for (int j = 0; j < matrix.GetLength(1); j++)
+            {
+                Console.Write(matrix[i, j] + "\t");
+            }
+            Console.WriteLine();
+        }
+    }
+
+    private void PrintNodes(List<BTreeNodeWithPosition> nodesWithPositions)
+    {
+        var row = 0;
+        while(nodesWithPositions.Count() > 0)
+        {
+            var currentRow = nodesWithPositions.Where(r => r.positionY == row);
+
+            if (nodesWithPositions.Count == 0)
+            {
+                break;
+            }
+            for (int column = 0; column <= currentColumn; column++)
+            {
+                var currentItem = currentRow.Where(r => r.positionX == column).FirstOrDefault();
+                if (currentItem is not null)
+                {
+                    nodesWithPositions.Remove(currentItem);
+                    /*
+                    for (int i = 0; i < currentColumn/(row+1)-4; i++)
+                    {
+                        Console.Write('-');
+                    }
+                    */
+                    Console.Write("/");
+                    foreach (var value in currentItem.nodeValues)
+                    {
+                        Console.Write($"{value},");
+                    }
+                    Console.Write("\\");
+                    for (int i = 0; i < (currentColumn /(row+1)) ; i++)
+                    {
+                        Console.Write('_');
+                    }
+                    if (row < maxRow-1)
+                        Console.Write('v');
+                }
+                else
+                {
+                    Console.Write(' ');
+                    Console.Write(' ');
+                }
+
+                
+            }
+
+            Console.WriteLine("");
+
+
+            if (row < maxRow - 1)
+                Console.Write('|');
+
+            Console.WriteLine("");
+            row++;
+        }
     }
 
     // Wstawianie klucza do drzewa
@@ -187,8 +349,10 @@ public class BTree
     private bool Search(BTreeNode node, int key)
     {
         int i = 0;
+        Console.WriteLine(node.Keys[i]);
         while (i < node.KeyCount && key > node.Keys[i])
         {
+            //Console.WriteLine(node.Keys[i]);
             i++;
         }
 
