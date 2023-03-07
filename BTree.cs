@@ -6,7 +6,7 @@ namespace bTreeWinForm
 {
     public class BTree
     {
-        private BTreeNode root; // korzeń drzewa
+        private BTreeNode root; // korzeń drzewaaa
         private int t; // stopień drzewa
         private int currentColumn = 0;
         private int maxRow = 0; //max kolumna i wiersz, do macierzy
